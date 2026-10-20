@@ -4,6 +4,7 @@
  * (o tech lead troca `getUser` por verificação de JWT). Provedores reais entram por variável de ambiente; sem chave, usa mock.
  */
 import Fastify from "fastify";
+import cors from "@fastify/cors";
 import { Redis } from "ioredis";
 import { z } from "zod";
 import { eq, and, desc } from "drizzle-orm";
@@ -23,6 +24,8 @@ export function buildApp(opts: { db?: ReturnType<typeof makeDb>; redis?: Redis; 
   const invoices = useMocks || !process.env.FOCUSNFE_TOKEN ? new MockInvoiceProvider() : new FocusNfeProvider(process.env.FOCUSNFE_TOKEN);
   const orders = new OrderService({ db, payments, shipping, invoices });
   const app = Fastify({ logger: process.env.NODE_ENV !== "test" });
+  // CORS: o web (3000) e o app chamam a API direto do navegador; em produção, lista de origens por env
+  app.register(cors, { origin: process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(",") : true, allowedHeaders: ["content-type", "x-user-id", "authorization"] });
   // corpo JSON vazio (ex.: POST /shows/:id/start sem payload) vira {} em vez de 400
   app.addContentTypeParser("application/json", { parseAs: "string" }, (_req, body, done) => {
     try { done(null, body === "" ? {} : JSON.parse(body as string)); } catch (e) { done(e as Error, undefined); }

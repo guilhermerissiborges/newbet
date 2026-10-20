@@ -20,7 +20,7 @@ import type { AuctionSnapshot, ServerMessage } from "@arrematto/contracts";
 import { API, WS, brl } from "@/lib/api";
 
 type Chat = { userId: string; text: string; at: number };
-type Listing = { id: string; title: string; priceCents: number; status: string; imageUrls: string[] };
+type Listing = { id: string; title: string; priceCents: number; status: string; imageUrls: string[]; createdAt?: string };
 type ShowData = { title: string; status: string; startedAt?: string | null; sellerName?: string; listings: Listing[] };
 type Reaction = { id: number; kind: "heart" | "fire" | "clap"; x: number };
 type Outcome = { kind: "won"; priceCents: number } | { kind: "lost_close"; diffCents: number; winner: string } | { kind: "lost"; winner: string } | null;
@@ -40,12 +40,12 @@ function playWinTone() {
 const haptic = (ms = 30) => { try { navigator.vibrate?.(ms); } catch {} };
 
 /* ---------- Anel do timer ---------- */
-function TimerRing({ remaining, total, status, label: forced }: { remaining: number; total: number; status: AuctionSnapshot["status"] | "between"; label?: string }) {
+function TimerRing({ remaining, total, status, won }: { remaining: number; total: number; status: AuctionSnapshot["status"]; won: boolean }) {
   const r = 28, c = 2 * Math.PI * r;
   const frac = status === "running" ? Math.max(0, Math.min(1, remaining / Math.max(total, 1))) : 0;
   const urgent = status === "running" && remaining <= 10_000;
-  const label = forced ?? (status === "running" ? (remaining / 1000).toFixed(remaining < 10_000 ? 1 : 0) : status === "sold" ? "✓" : "—");
-  const color = urgent ? "var(--coral)" : status === "sold" ? "var(--menta)" : status === "running" ? "var(--texto)" : "var(--apoio)";
+  const label = status === "running" ? (remaining / 1000).toFixed(remaining < 10_000 ? 1 : 0) : won ? "✓" : "fim";
+  const color = urgent ? "var(--coral)" : won ? "var(--menta)" : status === "running" ? "var(--texto)" : "var(--apoio)";
   return (
     <div className={`relative w-16 h-16 flex-none rounded-full ${urgent ? "pulse-coral" : ""}`} aria-label={status === "running" ? `${Math.ceil(remaining / 1000)} segundos` : label}>
       <svg viewBox="0 0 64 64" className="w-16 h-16 -rotate-90">
@@ -53,7 +53,7 @@ function TimerRing({ remaining, total, status, label: forced }: { remaining: num
         {/* a transição de 200 ms é o "encher de volta" no reset do timer */}
         <circle cx="32" cy="32" r={r} fill="none" stroke={color} strokeWidth="4" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - frac)} style={{ transition: "stroke-dashoffset 200ms linear, stroke 200ms" }} />
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center font-display font-bold text-xl tabular leading-none" style={{ color }}>{label}</div>
+      <div className={`absolute inset-0 flex flex-col items-center justify-center font-display font-bold tabular leading-none ${label === "fim" ? "text-xs" : "text-xl"}`} style={{ color }}>{label}</div>
     </div>
   );
 }
@@ -105,6 +105,7 @@ function ShowPageInner() {
   const ws = useRef<WebSocket | null>(null);
   const lastListing = useRef<string | null>(null);
   const myMaxByListing = useRef<Map<string, number>>(new Map());
+  const closedListings = useRef<Set<string>>(new Set()); // itens já encerrados nesta sessão (a lista do show não é recarregada a cada fechamento)
   const sessionStart = useRef(Date.now());
   const lastTrophyAt = useRef(0);
   const reactionId = useRef(0);
@@ -128,6 +129,7 @@ function ShowPageInner() {
           // pré-lance armado para este item: entra sozinho assim que o item roda
           setPreBid(p => { if (p && p.listingId === s.listingId && s.status === "running") { sendBid(s.listingId, Math.max(p.cents, s.minNextBidCents)); setToast({ text: `Pré-lance de ${brl(Math.max(p.cents, s.minNextBidCents))} enviado`, tone: "menta" }); return null; } return p; });
         }
+        if (s.status !== "running") closedListings.current.add(s.listingId);
         setSnap(prev => {
           if (prev && prev.listingId === s.listingId && prev.status === "running" && s.status !== "running") {
             // fechamento: decidir o desfecho para ESTE usuário
@@ -175,7 +177,8 @@ function ShowPageInner() {
   const remaining = snap ? Math.max(0, snap.endsAt - (now + offset)) : 0;
   const running = snap?.status === "running" && remaining > 0;
   const current = useMemo(() => show?.listings.find(l => l.id === snap?.listingId), [show, snap]);
-  const next = useMemo(() => { if (!show || !snap) return null; const i = show.listings.findIndex(l => l.id === snap.listingId); return show.listings.slice(i + 1).find(l => l.status !== "sold") ?? null; }, [show, snap]);
+  // próximo item do mesmo seller: o primeiro ainda disponível, na ordem da fila (createdAt), excluindo o atual
+  const next = useMemo(() => { if (!show || !snap) return null; const done = new Set(["SOLD", "UNSOLD", "RUNNING", "CANCELLED"]); return [...show.listings].sort((a, b) => (a.createdAt ?? "").localeCompare(b.createdAt ?? "")).find(l => l.id !== snap.listingId && !closedListings.current.has(l.id) && !done.has(String(l.status).toUpperCase())) ?? null; }, [show, snap]);
   const youLead = snap?.leaderUserId === userId;
   const bid = (cents: number) => { if (!snap) return; if (!acknowledged) { setFirstBidSheet(true); return; } sendBid(snap.listingId, cents); };
   const ackAndBid = () => { try { localStorage.setItem("arrematto.firstBidAck", "1"); if (wantLimit) localStorage.setItem("arrematto.limitOptIn", "1"); } catch {} setAcknowledged(true); setFirstBidSheet(false); if (snap) sendBid(snap.listingId, snap.minNextBidCents); };
@@ -261,7 +264,7 @@ function ShowPageInner() {
                   {running && <span className="text-texto-2 font-normal"> · {snap.bidCount} lances · {snap.bidderCount ?? 0} pessoas</span>}
                 </div>
               </div>
-              <TimerRing remaining={remaining} total={total} status={snap.status} />
+              <TimerRing remaining={remaining} total={total} status={snap.status} won={snap.status === "sold" && youLead} />
             </div>
 
             {running ? (
