@@ -1,26 +1,43 @@
 @import "tailwindcss";
 
+/* Arrematto — tokens de cor com significado único (ver "Psicologia do produto", seção 3) */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --carvao: #0E0F12;      /* palco: fundo das telas de show e do Studio */
+  --carvao-2: #15171C;    /* cards sobre o palco */
+  --carvao-3: #1E2128;    /* chips, botões neutros */
+  --borda: #2A2E37;
+  --texto: #F3F4F6;
+  --texto-2: #C7CBD1;
+  --apoio: #9AA0AA;       /* regras, prazos, metadados */
+  --coral: #FF5A3C;       /* só: botão de lance, AO VIVO, timer nos 10 s finais */
+  --menta: #2BD9A0;       /* só: você lidera, ganhou, confirmado */
+  --ambar: #F2B33D;       /* atenção sem urgência: coberto, PIX expirando */
+  --papel: #FFFFFF;       /* checkout e pedido */
+  --papel-2: #F1F2F4;
+  --tinta: #15171C;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-carvao: var(--carvao);
+  --color-carvao-2: var(--carvao-2);
+  --color-carvao-3: var(--carvao-3);
+  --color-borda: var(--borda);
+  --color-texto: var(--texto);
+  --color-texto-2: var(--texto-2);
+  --color-apoio: var(--apoio);
+  --color-coral: var(--coral);
+  --color-menta: var(--menta);
+  --color-ambar: var(--ambar);
+  --color-papel: var(--papel);
+  --color-papel-2: var(--papel-2);
+  --color-tinta: var(--tinta);
+  --font-sans: Inter, system-ui, sans-serif;
+  --font-display: Sora, Inter, system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+body { background: var(--carvao); color: var(--texto); font-family: var(--font-sans); }
+.font-display { font-family: var(--font-display); }
+.tabular { font-variant-numeric: tabular-nums; }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
+@keyframes pulse-coral { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 90, 60, 0.55); } 50% { box-shadow: 0 0 0 8px rgba(255, 90, 60, 0); } }
+.pulse-coral { animation: pulse-coral 1s ease-out infinite; }
