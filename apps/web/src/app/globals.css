@@ -39,5 +39,25 @@ body { background: var(--carvao); color: var(--texto); font-family: var(--font-s
 .font-display { font-family: var(--font-display); }
 .tabular { font-variant-numeric: tabular-nums; }
 
+/* Seção 4 — tempo, som e movimento */
 @keyframes pulse-coral { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 90, 60, 0.55); } 50% { box-shadow: 0 0 0 8px rgba(255, 90, 60, 0); } }
-.pulse-coral { animation: pulse-coral 1s ease-out infinite; }
+.pulse-coral { animation: pulse-coral 1s ease-out infinite; }           /* 1 Hz, só nos últimos 10 s */
+
+@keyframes price-bump { 0% { transform: translateY(6px); opacity: .6; } 100% { transform: translateY(0); opacity: 1; } }
+.price-bump { animation: price-bump 150ms ease-out; }                    /* lance aceito: preço sobe em 150 ms */
+
+@keyframes card-won { 0%, 80% { background: #113D30; border-color: var(--menta); } 100% { background: var(--carvao-2); border-color: var(--borda); } }
+.card-won { animation: card-won 2.4s ease-out forwards; }                /* ganhou: menta por 2 s, depois volta */
+
+@keyframes card-lost { 0%, 60% { border-color: var(--ambar); } 100% { border-color: var(--borda); } }
+.card-lost { animation: card-lost 1.6s ease-out forwards; }              /* perdeu por pouco: âmbar ~1 s, sem som */
+
+@keyframes reaction-float { 0% { transform: translateY(0) scale(.8); opacity: 0; } 15% { opacity: .95; transform: translateY(-20px) scale(1); } 100% { transform: translateY(-200px) translateX(-12px) scale(1.15); opacity: 0; } }
+.reaction { position: absolute; bottom: 0; font-size: 20px; color: var(--coral); animation: reaction-float 1.8s ease-out forwards; }
+
+@keyframes confetti-fall { 0% { transform: translateY(-10vh) rotate(0); opacity: 1; } 100% { transform: translateY(110vh) rotate(540deg); opacity: .9; } }
+.confetti { position: absolute; top: 0; width: 8px; height: 12px; border-radius: 2px; animation: confetti-fall 1.2s ease-in forwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-coral, .price-bump, .reaction, .confetti { animation: none; }
+}

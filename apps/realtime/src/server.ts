@@ -80,6 +80,15 @@ wss.on("connection", (ws) => {
         conn.chatTokens -= 1;
         await broadcast(conn.showId, { type: "chat", userId: conn.userId, text: m.text, at: now });
       }
+      if (m.type === "reaction") {
+        // reações usam o mesmo balde do chat (até 5 em rajada, 2/s): baratas, mas não podem virar DoS do lance
+        const elapsed = (now - conn.chatRefill) / 1000;
+        conn.chatTokens = Math.min(CHAT_RATE.burst, conn.chatTokens + elapsed * CHAT_RATE.perSec); conn.chatRefill = now;
+        if (conn.chatTokens < 1) return;
+        conn.chatTokens -= 1;
+        await redis.hincrby(`show:${conn.showId}:reactions`, m.kind, 1); // contagem para o Studio
+        await broadcast(conn.showId, { type: "reaction", userId: conn.userId, kind: m.kind, at: now });
+      }
     } catch (e) {
       send(ws, { type: "error", message: "internal" });
       console.error(e);

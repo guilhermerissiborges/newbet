@@ -5,6 +5,8 @@ export const ClientMessage = z.discriminatedUnion("type", [
   z.object({ type: z.literal("join"), showId: z.string(), token: z.string() }),
   z.object({ type: z.literal("bid"), listingId: z.string(), maxCents: z.number().int().positive(), clientBidId: z.string() }),
   z.object({ type: z.literal("chat"), text: z.string().min(1).max(300) }),
+  /** Reação flutuante (modelo Instagram Live): barata, agregada pelo cliente, contada para o seller */
+  z.object({ type: z.literal("reaction"), kind: z.enum(["heart", "fire", "clap"]) }),
   z.object({ type: z.literal("ping") }),
 ]);
 export type ClientMessage = z.infer<typeof ClientMessage>;
@@ -18,6 +20,8 @@ export const AuctionSnapshot = z.object({
   minNextBidCents: z.number(),
   endsAt: z.number(),
   bidCount: z.number(),
+  /** pessoas distintas que já deram lance neste item ("x disputando") */
+  bidderCount: z.number().default(0),
   serverNow: z.number(),
 });
 export type AuctionSnapshot = z.infer<typeof AuctionSnapshot>;
@@ -28,6 +32,7 @@ export const ServerMessage = z.discriminatedUnion("type", [
   z.object({ type: z.literal("bid_result"), clientBidId: z.string(), ok: z.boolean(), reason: z.string().optional(), youLead: z.boolean().optional() }),
   z.object({ type: z.literal("chat"), userId: z.string(), text: z.string(), at: z.number() }),
   z.object({ type: z.literal("viewers"), count: z.number() }),
+  z.object({ type: z.literal("reaction"), userId: z.string(), kind: z.enum(["heart", "fire", "clap"]), at: z.number() }),
   z.object({ type: z.literal("error"), message: z.string() }),
   z.object({ type: z.literal("pong"), serverNow: z.number() }),
 ]);

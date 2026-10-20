@@ -62,6 +62,9 @@ if s.mode == 'standard' and (endsAt - now) <= tonumber(s.counterWindow) then
 end
 
 redis.call('HSET', key, 'price', newPrice, 'leader', newLeader, 'leaderMax', newLeaderMax, 'bidCount', bidCount, 'endsAt', newEndsAt)
+-- "x disputando": conjunto de quem já deu lance neste item (número real mostrado ao comprador)
+redis.call('SADD', key .. ':bidders', user)
+redis.call('EXPIRE', key .. ':bidders', 86400)
 -- trilha de auditoria: cada lance aceito, na ordem exata em que foi serializado
 redis.call('XADD', key .. ':bids', '*', 'user', user, 'max', max, 'price', newPrice, 'now', now)
 return {1, newPrice, newLeader, newLeaderMax, newEndsAt, bidCount, outbid, timerReset}

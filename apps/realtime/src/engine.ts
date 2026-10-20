@@ -82,13 +82,13 @@ export class AuctionEngine {
   }
 
   async snapshot(listingId: string, now: number): Promise<AuctionSnapshot | null> {
-    const h = await this.redis.hgetall(this.key(listingId));
+    const [h, bidderCount] = await Promise.all([this.redis.hgetall(this.key(listingId)), this.redis.scard(`${this.key(listingId)}:bidders`)]);
     if (!h.status) return null;
     const price = Number(h.price); const leader = h.leader || null;
     return {
       listingId, status: h.status as AuctionSnapshot["status"], currentPriceCents: price, leaderUserId: leader,
       minNextBidCents: leader ? price + minIncrementCents(price) : Number(h.startingBid),
-      endsAt: Number(h.endsAt), bidCount: Number(h.bidCount), serverNow: now,
+      endsAt: Number(h.endsAt), bidCount: Number(h.bidCount), bidderCount: Number(bidderCount), serverNow: now,
     };
   }
 }
