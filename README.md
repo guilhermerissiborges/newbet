@@ -13,7 +13,9 @@ pnpm dev:realtime     # ws://localhost:8081
 - `packages/contracts` — mensagens cliente↔realtime e eventos realtime→API (zod).
 - `apps/realtime` — WebSocket por show, leilão em `src/lua/bid.lua` (uma execução por lance, serializada pelo Redis), chat com token bucket, presença com cap, relógio que fecha leilões e publica `auction.closed` em `events:auction` (Redis Stream) para a API consumir.
 - `apps/api` — Fastify + Drizzle (Postgres). Rotas: usuários, sellers (CNPJ obrigatório), shows, listings (cosmético exige nº ANVISA), iniciar leilão (comando ao realtime), fechar show (Smart Bundling → pedidos + cobrança PIX/cartão), webhook de pagamento (→ NF-e + ledger), etiqueta, scan, entrega (→ escrow D+7), job de liberação, saldo do seller. Adaptadores com implementação real + mock: Pagar.me, Melhor Envio, Focus NFe.
-- Próximos: `apps/web` (Next.js), `apps/mobile` (Expo), `infra/terraform`.
+- `apps/web` — Next.js: home com os shows, página do show (timer sincronizado pelo relógio do servidor, lance rápido, Max Bid, chat) e Seller Studio v0 (ir ao vivo, rodar item em leilão padrão ou Sudden Death, encerrar o show gerando pedidos e cobranças, saldo disponível/escrow). Vídeo entra na semana 3 (LiveKit).
+- `scripts/dev-up.sh` — sobe Redis, realtime, API e web para demo local.
+- Próximos: LiveKit (vídeo), Supabase Auth, `apps/mobile` (Expo), `infra/terraform`.
 
 ```
 # API

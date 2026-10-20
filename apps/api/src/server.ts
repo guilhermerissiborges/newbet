@@ -23,6 +23,10 @@ export function buildApp(opts: { db?: ReturnType<typeof makeDb>; redis?: Redis; 
   const invoices = useMocks || !process.env.FOCUSNFE_TOKEN ? new MockInvoiceProvider() : new FocusNfeProvider(process.env.FOCUSNFE_TOKEN);
   const orders = new OrderService({ db, payments, shipping, invoices });
   const app = Fastify({ logger: process.env.NODE_ENV !== "test" });
+  // corpo JSON vazio (ex.: POST /shows/:id/start sem payload) vira {} em vez de 400
+  app.addContentTypeParser("application/json", { parseAs: "string" }, (_req, body, done) => {
+    try { done(null, body === "" ? {} : JSON.parse(body as string)); } catch (e) { done(e as Error, undefined); }
+  });
 
   const getUser = async (req: { headers: Record<string, unknown> }) => {
     const id = req.headers["x-user-id"]; if (typeof id !== "string") return null;
