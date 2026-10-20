@@ -2,8 +2,8 @@ import { Redis } from "ioredis";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import { minIncrementCents, type AuctionConfig } from "@live/domain";
-import type { AuctionSnapshot, AuctionClosedEvent } from "@live/contracts";
+import { minIncrementCents, type AuctionConfig } from "@arrematto/domain";
+import type { AuctionSnapshot, AuctionClosedEvent } from "@arrematto/contracts";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const BID_LUA = readFileSync(path.join(here, "lua", "bid.lua"), "utf8");

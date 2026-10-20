@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { Redis } from "ioredis";
 import { spawn, type ChildProcess } from "node:child_process";
 import { AuctionEngine } from "../src/engine.js";
-import { startAuction, placeBid, DEFAULT_CONFIG, type AuctionState } from "@live/domain";
+import { startAuction, placeBid, DEFAULT_CONFIG, type AuctionState } from "@arrematto/domain";
 
 const PORT = 6399;
 let proc: ChildProcess; let redis: Redis; let engine: AuctionEngine;

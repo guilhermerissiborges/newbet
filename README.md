@@ -1,4 +1,4 @@
-# live — marketplace de live shopping (monorepo)
+# Arrematto — marketplace de live shopping com leilão (monorepo)
 
 Semana 1 do plano de execução: motor de leilão em tempo real com regras puras e script Lua atômico.
 

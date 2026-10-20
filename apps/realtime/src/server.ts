@@ -7,9 +7,9 @@
  */
 import { WebSocketServer, WebSocket } from "ws";
 import { Redis } from "ioredis";
-import { ClientMessage, type ServerMessage } from "@live/contracts";
+import { ClientMessage, type ServerMessage } from "@arrematto/contracts";
 import { AuctionEngine } from "./engine.js";
-import { DEFAULT_CONFIG } from "@live/domain";
+import { DEFAULT_CONFIG } from "@arrematto/domain";
 
 const PORT = Number(process.env.PORT ?? 8081);
 const REDIS_URL = process.env.REDIS_URL ?? "redis://127.0.0.1:6379";
