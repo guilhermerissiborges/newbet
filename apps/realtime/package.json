@@ -1,0 +1,19 @@
+{
+  "name": "@live/realtime",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@live/domain": "workspace:*",
+    "@live/contracts": "workspace:*",
+    "ioredis": "^5.4.0",
+    "ws": "^8.18.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": { "@types/ws": "^8.5.0" }
+}
