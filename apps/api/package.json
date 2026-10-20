@@ -7,17 +7,21 @@
     "start": "tsx src/server.ts",
     "test": "vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit",
-    "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed": "tsx src/db/seed.ts"
   },
   "dependencies": {
-    "@arrematto/domain": "workspace:*",
     "@arrematto/contracts": "workspace:*",
-    "@prisma/client": "^6.0.0",
+    "@arrematto/domain": "workspace:*",
+    "@paralleldrive/cuid2": "^3.3.0",
+    "drizzle-orm": "^0.45.4",
     "fastify": "^5.0.0",
     "ioredis": "^5.4.0",
+    "postgres": "^3.4.9",
     "zod": "^3.23.0"
   },
-  "devDependencies": { "prisma": "^6.0.0" }
+  "devDependencies": {
+    "drizzle-kit": "^0.31.11"
+  }
 }
